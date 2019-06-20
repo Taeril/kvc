@@ -1,0 +1,6 @@
+quotes = "value"
+apostrophes = 'value'
+backticks = `value`
+percent_curly_bracket = %{value}
+percent_parenthesis = %(value)
+percent_square_bracket = %[value]
