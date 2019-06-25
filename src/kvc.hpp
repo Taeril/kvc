@@ -38,6 +38,8 @@ class Config {
 
 		std::string const& get_value(std::string const& k, std::string const& default_);
 
+		void set(std::string const& k, std::string const& v, std::string const& c="");
+
 		void add(std::string const& k, std::string const& v, std::string const& c="");
 		void add(std::string const& k, std::vector<std::string> const& vs, std::string const& c="");
 

@@ -306,6 +306,15 @@ std::string const& Config::get_value(std::string const& k, std::string const& de
 	return kvc ? kvc->value : default_;
 }
 
+void Config::set(std::string const& k, std::string const& v, std::string const& c) {
+	KVC* kvc = get(k);
+	if(kvc) {
+		kvc->value = v;
+		kvc->comment = c;
+	} else {
+		add(k, v, c);
+	}
+}
 
 void Config::add(std::string const& k, std::string const& v, std::string const& c) {
     KVC kvc;
