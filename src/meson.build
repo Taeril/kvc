@@ -22,13 +22,12 @@ kvc_lib = static_library('kvc', sources,
   install : true,
   gnu_symbol_visibility : 'hidden',
   dependencies: fmt_dep,
-  include_directories: '.',
+  include_directories: [kvc_inc, '../include/kvc'],
 )
-install_headers('kvc.hpp')
 
 kvc_dep = declare_dependency(
   link_with: kvc_lib,
-  include_directories: '.',
+  include_directories: kvc_inc,
 )
 
 

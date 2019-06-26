@@ -4,7 +4,7 @@
 
 #include <string>
 #include <vector>
-#include "kvc.hpp"
+#include <kvc/kvc.hpp>
 
 TEST_CASE("Arrays") {
 	kvc::Config cfg;

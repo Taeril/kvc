@@ -3,7 +3,7 @@
 #include "catch.hpp"
 
 #include <string>
-#include "kvc.hpp"
+#include <kvc/kvc.hpp>
 
 TEST_CASE("Version") {
 	std::string version = kvc::version();

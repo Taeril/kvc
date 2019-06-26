@@ -3,7 +3,7 @@
 #include "catch.hpp"
 
 #include <cstdlib>
-#include "kvc.hpp"
+#include <kvc/kvc.hpp>
 
 TEST_CASE("Strings") {
 	kvc::Config cfg;
