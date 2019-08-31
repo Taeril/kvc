@@ -3,6 +3,7 @@
 
 #include <string>
 #include <vector>
+#include <deque>
 #include <unordered_map>
 #include <functional>
 
@@ -46,7 +47,7 @@ class Config {
 
 		size_t lines();
 	private:
-		std::vector<KVC> data_;
+		std::deque<KVC> data_;
 		std::unordered_map<std::string, KVC*> keys_; 
 
 		std::string quote_value(std::string const& str);
