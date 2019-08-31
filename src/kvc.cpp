@@ -16,17 +16,17 @@ unsigned version_patch() { return VERSION_PATCH; }
 // KVC
 
 enum class State {
-    Nothing,
-    Key,
-    KeySpace,
-    PreValue,
-    Value,
-    Quote,
-    String,
-    PreComment,
-    Comment,
-    Array,
-    Error,
+	Nothing,
+	Key,
+	KeySpace,
+	PreValue,
+	Value,
+	Quote,
+	String,
+	PreComment,
+	Comment,
+	Array,
+	Error,
 };
 
 Config::Config() {
@@ -41,209 +41,209 @@ Config::~Config() {
 
 
 Config& Config::parse(std::string const& cfg) {
-    State state = State::Nothing;
-    char quote = '\0';
-    bool in_array = false;
-    bool something = false;
+	State state = State::Nothing;
+	char quote = '\0';
+	bool in_array = false;
+	bool something = false;
 
-    size_t key_start = 0;
-    size_t key_end = 0;
-    size_t value_start = 0;
-    size_t value_end = 0;
-    size_t comment_start = 0;
-    size_t comment_end = 0;
+	size_t key_start = 0;
+	size_t key_end = 0;
+	size_t value_start = 0;
+	size_t value_end = 0;
+	size_t comment_start = 0;
+	size_t comment_end = 0;
 
-    KVC kvc;
+	KVC kvc;
 
-    size_t pos =0;
-    for(auto const& c : cfg) {
-        if(state == State::Nothing) {
-            quote = '\0';
-            in_array = false;
-            something = false;
-            key_start = 0;
-            key_end = 0;
-            value_start = 0;
-            value_end = 0;
-            comment_start = 0;
-            comment_end = 0;
+	size_t pos =0;
+	for(auto const& c : cfg) {
+		if(state == State::Nothing) {
+			quote = '\0';
+			in_array = false;
+			something = false;
+			key_start = 0;
+			key_end = 0;
+			value_start = 0;
+			value_end = 0;
+			comment_start = 0;
+			comment_end = 0;
 
-            if(
-               (c >= 'a' && c <= 'z') ||
-               (c >= 'A' && c <= 'Z') ||
-               c == '_'
-            ) {
-                key_start = pos;
-                state = State::Key;
-            } else if(c == ' ' || c == '\t' || c == '\n') {
-                // ???
-                // do nothing?
-            } else if(c == '#') {
-                state = State::PreComment;
-            } else {
-                comment_start = pos;
-                state = State::Comment; // err
-            }
-        } else if(state == State::Key) {
-            if(
-               (c >= 'a' && c <= 'z') ||
-               (c >= 'A' && c <= 'Z') ||
-               (c >= '0' && c <= '9') ||
-               c == '_' || c == '-'
-            ) {
-                // do nothing
-            } else if(c == ' ' || c == '\t') {
-                key_end = pos;
-                state = State::KeySpace;
-            } else if(c == ':' || c == '=') {
-                key_end = pos;
-                state = State::PreValue;
-            } else if(c == '#') {
-                key_end = pos;
-                state = State::PreComment;
-            } else if(c == '\n') {
-                key_end = pos;
-                state = State::Nothing;
-            } else {
-                comment_start = pos;
-                state = State::Comment; // err
-            }
-        } else if(state == State::KeySpace) {
-            if(c == ' ' || c == '\t') {
-                // do nothing
-            } else if(c == ':' || c == '=') {
-                state = State::PreValue;
-            } else if(c == '#') {
-                state = State::PreComment;
-            } else {
-                comment_start = pos;
-                state = State::Comment; // err
-            } 
-        } else if(state == State::PreValue) {
-            if(c == ' ' || c == '\t') {
-                // do nothing
-            } else if(c == '%') {
-                state = State::Quote;
-            } else if(c == '"' || c == '\'' || c == '`') {
-                quote = c;
-                value_start = pos + 1;
-                state = State::String;
-            } else if(c == '#') {
-                state = State::PreComment;
-            } else if(c == '[') {
-                in_array = true;
-                kvc.values.clear();
-                kvc.is_array = true;
-                state = State::Array;
-            } else if(c == '\n') {
-                state = State::Nothing;
-            } else {
-                value_start = pos;
-                state = State::Value;
-            }
-        } else if(state == State::Value) {
-            if(c == '\n') {
-                value_end = pos;
-                state = State::Nothing;
-            } else if(c == '#') {
-                state = State::PreComment;
-            } else if(c != ' ' && c != '\t') {
-                value_end = pos + 1;
-            }
-        } else if(state == State::Quote) {
-            if(c == '\n') {
-                state = State::Nothing; // err
-            } else if(c == '#') {
-                state = State::PreComment;
-            } else {
-                if(c == '(') {
-                    quote = ')';
-                } else if(c == '{') {
-                    quote = '}';
-                } else if(c == '[') {
-                    quote = ']';
-                } else if(c == '<') {
-                    quote = '>';
-                } else {
-                    quote = c;
-                }
-                value_start = pos + 1;
-                state = State::String;
-            }
-        } else if(state == State::String) {
-            if(c == quote) {
-                value_end = pos;
-                if(in_array) {
-                    state = State::Array;
-                } else {
-                    state = State::PreComment;
-                }
-            } else if(in_array && quote == ',' && c == ']') {
-                value_end = pos;
-                state = State::Array;
-            } else if(c == '\n') {
-                value_end = pos - 1;
-                state = State::Nothing; // err
-            }
-        } else if(state == State::PreComment) {
-            if(c == ' ' || c == '\t' || c == '#') {
-                // do nothing
-            } else if(c == '\n') {
-                state = State::Nothing;
-            } else {
-                comment_start = pos;
-                state = State::Comment;
-            }
-        } else if(state == State::Comment) {
-            if(c == '\n') {
-                comment_end = pos;
-                state = State::Nothing;
-            }
-        } else if(state == State::Array) {
-            if(c == ' ' || c == '\t') {
-                // do nothing
-            } else if(c == '%') {
-                state = State::Quote;
-            } else if(c == '"' || c == '\'') {
-                quote = c;
-                value_start = pos + 1;
-                state = State::String;
-            } else if(c == '#' || c == '[') {
-                state = State::Error; // err?
-            } else if(c == ']') {
-                state = State::PreComment;
-            } else if(c == '\n') {
-                state = State::Nothing; //err
-            } else if(c == ',') {
-                // ???
-                // do nothing
-            } else {
-                quote = ',';
-                value_start = pos;
-                state = State::String;
-            }
-        } else if(state == State::Error) {
-            throw 1; // TODO: ...
-        }
+			if(
+			   (c >= 'a' && c <= 'z') ||
+			   (c >= 'A' && c <= 'Z') ||
+			   c == '_'
+			  ) {
+				key_start = pos;
+				state = State::Key;
+			} else if(c == ' ' || c == '\t' || c == '\n') {
+				// ???
+				// do nothing?
+			} else if(c == '#') {
+				state = State::PreComment;
+			} else {
+				comment_start = pos;
+				state = State::Comment; // err
+			}
+		} else if(state == State::Key) {
+			if(
+			   (c >= 'a' && c <= 'z') ||
+			   (c >= 'A' && c <= 'Z') ||
+			   (c >= '0' && c <= '9') ||
+			   c == '_' || c == '-'
+			  ) {
+				// do nothing
+			} else if(c == ' ' || c == '\t') {
+				key_end = pos;
+				state = State::KeySpace;
+			} else if(c == ':' || c == '=') {
+				key_end = pos;
+				state = State::PreValue;
+			} else if(c == '#') {
+				key_end = pos;
+				state = State::PreComment;
+			} else if(c == '\n') {
+				key_end = pos;
+				state = State::Nothing;
+			} else {
+				comment_start = pos;
+				state = State::Comment; // err
+			}
+		} else if(state == State::KeySpace) {
+			if(c == ' ' || c == '\t') {
+				// do nothing
+			} else if(c == ':' || c == '=') {
+				state = State::PreValue;
+			} else if(c == '#') {
+				state = State::PreComment;
+			} else {
+				comment_start = pos;
+				state = State::Comment; // err
+			}
+		} else if(state == State::PreValue) {
+			if(c == ' ' || c == '\t') {
+				// do nothing
+			} else if(c == '%') {
+				state = State::Quote;
+			} else if(c == '"' || c == '\'' || c == '`') {
+				quote = c;
+				value_start = pos + 1;
+				state = State::String;
+			} else if(c == '#') {
+				state = State::PreComment;
+			} else if(c == '[') {
+				in_array = true;
+				kvc.values.clear();
+				kvc.is_array = true;
+				state = State::Array;
+			} else if(c == '\n') {
+				state = State::Nothing;
+			} else {
+				value_start = pos;
+				state = State::Value;
+			}
+		} else if(state == State::Value) {
+			if(c == '\n') {
+				value_end = pos;
+				state = State::Nothing;
+			} else if(c == '#') {
+				state = State::PreComment;
+			} else if(c != ' ' && c != '\t') {
+				value_end = pos + 1;
+			}
+		} else if(state == State::Quote) {
+			if(c == '\n') {
+				state = State::Nothing; // err
+			} else if(c == '#') {
+				state = State::PreComment;
+			} else {
+				if(c == '(') {
+					quote = ')';
+				} else if(c == '{') {
+					quote = '}';
+				} else if(c == '[') {
+					quote = ']';
+				} else if(c == '<') {
+					quote = '>';
+				} else {
+					quote = c;
+				}
+				value_start = pos + 1;
+				state = State::String;
+			}
+		} else if(state == State::String) {
+			if(c == quote) {
+				value_end = pos;
+				if(in_array) {
+					state = State::Array;
+				} else {
+					state = State::PreComment;
+				}
+			} else if(in_array && quote == ',' && c == ']') {
+				value_end = pos;
+				state = State::Array;
+			} else if(c == '\n') {
+				value_end = pos - 1;
+				state = State::Nothing; // err
+			}
+		} else if(state == State::PreComment) {
+			if(c == ' ' || c == '\t' || c == '#') {
+				// do nothing
+			} else if(c == '\n') {
+				state = State::Nothing;
+			} else {
+				comment_start = pos;
+				state = State::Comment;
+			}
+		} else if(state == State::Comment) {
+			if(c == '\n') {
+				comment_end = pos;
+				state = State::Nothing;
+			}
+		} else if(state == State::Array) {
+			if(c == ' ' || c == '\t') {
+				// do nothing
+			} else if(c == '%') {
+				state = State::Quote;
+			} else if(c == '"' || c == '\'') {
+				quote = c;
+				value_start = pos + 1;
+				state = State::String;
+			} else if(c == '#' || c == '[') {
+				state = State::Error; // err?
+			} else if(c == ']') {
+				state = State::PreComment;
+			} else if(c == '\n') {
+				state = State::Nothing; //err
+			} else if(c == ',') {
+				// ???
+				// do nothing
+			} else {
+				quote = ',';
+				value_start = pos;
+				state = State::String;
+			}
+		} else if(state == State::Error) {
+			throw 1; // TODO: ...
+		}
 
-        if(state == State::Array && in_array && something && value_start) {
-            kvc.values.push_back(cfg.substr(value_start, value_end-value_start));
+		if(state == State::Array && in_array && something && value_start) {
+			kvc.values.push_back(cfg.substr(value_start, value_end-value_start));
 
-            value_start = 0;
-            value_end = 0;
-        }
-        if(state == State::Nothing && (something || in_array)) {
-            kvc.key = cfg.substr(key_start, key_end-key_start);
-            kvc.value = cfg.substr(value_start, value_end-value_start);
-            kvc.comment = cfg.substr(comment_start, comment_end-comment_start);
+			value_start = 0;
+			value_end = 0;
+		}
+		if(state == State::Nothing && (something || in_array)) {
+			kvc.key = cfg.substr(key_start, key_end-key_start);
+			kvc.value = cfg.substr(value_start, value_end-value_start);
+			kvc.comment = cfg.substr(comment_start, comment_end-comment_start);
 
-            data_.push_back(kvc);
+			data_.push_back(kvc);
 
-            in_array = false;
-        }
-        something = state != State::Nothing && state != State::Array;
-        ++pos;
-    }
+			in_array = false;
+		}
+		something = state != State::Nothing && state != State::Array;
+		++pos;
+	}
 
 	synchronize_data_and_keys();
 
@@ -257,8 +257,8 @@ Config& Config::parse_file(std::string const& path) {
 std::string Config::to_string() {
 	std::string ret;
 
-    for(auto const& kvc : data_) {
-    	if(kvc.key.size() > 0) {
+	for(auto const& kvc : data_) {
+		if(kvc.key.size() > 0) {
 			ret += fmt::format("{} = ", kvc.key);
 			if(kvc.is_array) {
 				ret += "[";
@@ -286,7 +286,7 @@ std::string Config::to_string() {
 }
 
 void Config::each(std::function<void(KVC const&)> callback) {
-    for(auto const& kvc : data_) {
+	for(auto const& kvc : data_) {
 		callback(kvc);
 	}
 }
@@ -317,16 +317,16 @@ void Config::set(std::string const& k, std::string const& v, std::string const& 
 }
 
 void Config::add(std::string const& k, std::string const& v, std::string const& c) {
-    KVC kvc;
-    kvc.key = k;
-    kvc.value = v;
-    kvc.comment = c;
-    kvc.is_array = false;
+	KVC kvc;
+	kvc.key = k;
+	kvc.value = v;
+	kvc.comment = c;
+	kvc.is_array = false;
 
 	data_.push_back(kvc);
 	if(k.size() > 0) {
 		keys_[kvc.key] = &data_.back();
-    //} else {
+	//} else {
 	//	synchronize_data_and_keys();
 	}
 }
@@ -355,8 +355,8 @@ size_t Config::lines() {
 std::string Config::quote_value(std::string const& str) {
 	size_t count[94] = {0}; // 93 = '~'-'!'
 
-    for(auto const& c : str) {
-    	if(c >= '!' && c<= '~')
+	for(auto const& c : str) {
+		if(c >= '!' && c<= '~')
 			++count[c - '!'];
 	}
 
