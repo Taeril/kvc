@@ -86,3 +86,115 @@ percent_square_bracket = %[value]
 	}
 }
 
+TEST_CASE("Set") {
+	kvc::Config cfg;
+
+	cfg.parse(R"~(
+key = value # comment
+)~");
+
+	auto test = cfg.get("key");
+
+	CHECK(cfg.lines() == 1);
+
+	REQUIRE(test != nullptr);
+	CHECK(test->key == "key");
+	CHECK(test->value == "value");
+	CHECK(test->comment == "comment");
+	CHECK(test->is_array == false);
+
+	cfg.set("key", "new", "test");
+
+	auto test2 = cfg.get("key");
+
+	CHECK(cfg.lines() == 1);
+
+	REQUIRE(test2 != nullptr);
+	CHECK(test2->key == "key");
+	CHECK(test2->value == "new");
+	CHECK(test2->comment == "test");
+	CHECK(test2->is_array == false);
+}
+
+TEST_CASE("Add") {
+	kvc::Config cfg;
+
+	cfg.parse(R"~(
+key = value # comment
+)~");
+
+	auto test = cfg.get("key");
+
+	CHECK(cfg.lines() == 1);
+
+	REQUIRE(test != nullptr);
+	CHECK(test->key == "key");
+	CHECK(test->value == "value");
+	CHECK(test->comment == "comment");
+	CHECK(test->is_array == false);
+
+	cfg.add("key", "new", "test");
+
+	auto test2 = cfg.get("key");
+
+	CHECK(cfg.lines() == 2);
+
+	REQUIRE(test2 != nullptr);
+	CHECK(test2->key == "key");
+	CHECK(test2->value == "new");
+	CHECK(test2->comment == "test");
+	CHECK(test2->is_array == false);
+
+	cfg.add("key", "no comment");
+
+	auto test3 = cfg.get("key");
+
+	CHECK(cfg.lines() == 3);
+
+	REQUIRE(test3 != nullptr);
+	CHECK(test3->key == "key");
+	CHECK(test3->value == "no comment");
+	CHECK(test3->comment == "");
+	CHECK(test3->is_array == false);
+
+}
+
+TEST_CASE("Update") {
+	kvc::Config cfg;
+
+	cfg.parse(R"~(
+key = value # comment
+)~");
+
+	auto test = cfg.get("key");
+
+	CHECK(cfg.lines() == 1);
+
+	REQUIRE(test != nullptr);
+	CHECK(test->key == "key");
+	CHECK(test->value == "value");
+	CHECK(test->comment == "comment");
+	CHECK(test->is_array == false);
+
+	cfg.update("key", "new", "test");
+
+	auto test2 = cfg.get("key");
+
+	CHECK(cfg.lines() == 1);
+
+	REQUIRE(test2 != nullptr);
+	CHECK(test2->key == "key");
+	CHECK(test2->value == "new");
+	CHECK(test2->comment == "test");
+	CHECK(test2->is_array == false);
+
+	cfg.update("missing", "value", "do nothing");
+
+	auto test3 = cfg.get("missing");
+
+	CHECK(cfg.lines() == 1);
+
+	REQUIRE(test3 == nullptr);
+
+}
+
