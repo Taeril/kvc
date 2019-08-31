@@ -68,6 +68,10 @@ Config& Config::parse(std::string const& cfg) {
 			comment_start = 0;
 			comment_end = 0;
 
+			kvc.key = kvc.value = kvc.comment = "";
+			kvc.values.clear();
+			kvc.is_array = false;
+
 			if(
 				(c >= 'a' && c <= 'z') ||
 				(c >= 'A' && c <= 'Z') ||

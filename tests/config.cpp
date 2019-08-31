@@ -198,3 +198,24 @@ key = value # comment
 
 }
 
+TEST_CASE("Reset") {
+	kvc::Config cfg;
+
+	cfg.parse(R"~(
+foo = [1, 2, 3]
+bar = 1
+)~");
+	
+	auto foo = cfg.get("foo");
+	auto bar = cfg.get("bar");
+
+	REQUIRE(foo != nullptr);
+	REQUIRE(bar != nullptr);
+
+	REQUIRE(foo->is_array == true);
+	REQUIRE(bar->is_array == false);
+
+	REQUIRE(foo->values.size() == 3);
+	REQUIRE(bar->values.size() == 0);
+}
+
