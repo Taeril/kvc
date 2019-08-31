@@ -69,10 +69,10 @@ Config& Config::parse(std::string const& cfg) {
 			comment_end = 0;
 
 			if(
-			   (c >= 'a' && c <= 'z') ||
-			   (c >= 'A' && c <= 'Z') ||
-			   c == '_'
-			  ) {
+				(c >= 'a' && c <= 'z') ||
+				(c >= 'A' && c <= 'Z') ||
+				c == '_'
+			) {
 				key_start = pos;
 				state = State::Key;
 			} else if(c == ' ' || c == '\t' || c == '\n') {

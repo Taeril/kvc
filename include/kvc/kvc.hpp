@@ -48,7 +48,7 @@ class Config {
 		size_t lines();
 	private:
 		std::deque<KVC> data_;
-		std::unordered_map<std::string, KVC*> keys_; 
+		std::unordered_map<std::string, KVC*> keys_;
 
 		std::string quote_value(std::string const& str);
 
