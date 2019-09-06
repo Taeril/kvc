@@ -328,6 +328,13 @@ void Config::update(std::string const& k, std::string const& v, std::string cons
 	}
 }
 
+void Config::add_new(std::string const& k, std::string const& v, std::string const& c) {
+	KVC* kvc = get(k);
+	if(!kvc) {
+		add(k, v, c);
+	}
+}
+
 void Config::add(std::string const& k, std::string const& v, std::string const& c) {
 	KVC kvc;
 	kvc.key = k;

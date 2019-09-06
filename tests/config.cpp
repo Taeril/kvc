@@ -219,3 +219,29 @@ bar = 1
 	REQUIRE(bar->values.size() == 0);
 }
 
+TEST_CASE("Add_New") {
+	kvc::Config cfg;
+
+	cfg.parse(R"~(
+foo = test
+bar = old
+)~");
+	
+	CHECK(cfg.lines() == 2);
+
+	cfg.add_new("bar", "new");
+	cfg.add_new("baz", "42");
+
+	auto foo = cfg.get("foo");
+	auto bar = cfg.get("bar");
+	auto baz = cfg.get("baz");
+
+	REQUIRE(foo != nullptr);
+	REQUIRE(bar != nullptr);
+	REQUIRE(baz != nullptr);
+
+	CHECK(foo->value == "test");
+	CHECK(bar->value == "old");
+	CHECK(baz->value == "42");
+}
+

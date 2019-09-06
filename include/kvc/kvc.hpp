@@ -41,6 +41,7 @@ class Config {
 
 		void set(std::string const& k, std::string const& v, std::string const& c="");
 		void update(std::string const& k, std::string const& v, std::string const& c="");
+		void add_new(std::string const& k, std::string const& v, std::string const& c="");
 
 		void add(std::string const& k, std::string const& v, std::string const& c="");
 		void add(std::string const& k, std::vector<std::string> const& vs, std::string const& c="");
